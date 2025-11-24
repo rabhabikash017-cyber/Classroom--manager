@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Classroom & Resource Management</title>
+<style>
+  :root {
+    --bg: #f9f9fb;
+    --sidebar: #2b3a55;
+    --primary: #4e73df;
+    --text: #333;
+  }
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    height: 100vh;
+    background: var(--bg);
+  }
+  aside {
+    background: var(--sidebar);
+    color: white;
+    padding: 20px;
+  }
+  aside h2 {
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+  aside button {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    border: none;
+    border-radius: 5px;
+    background: var(--primary);
+    color: white;
+    cursor: pointer;
+  }
+  aside button:hover {
+    background: #3c5ecf;
+  }
+  main {
+    padding: 20px;
+    overflow-y: auto;
+  }
+  section { display: none; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+  }
+  th, td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: left;
+  }
+  th {
+    background: var(--primary);
+    color: white;
+  }
+  form { margin-top: 20px; }
+  input, button { padding: 8px; margin: 4px; }
+</style>
+</head>
+<body>
+<aside>
+  <h2>Classroom Manager</h2>
+  <p>Manage students, assignments & resources</p>
+  <button onclick="switchView('dashboard')">Dashboard</button>
+  <button onclick="switchView('students')">Students</button>
+  <button onclick="switchView('assignments')">Assignments</button>
+  <button onclick="switchView('resources')">Resources</button>
+</aside>
+
+<main>
+  <h1 id="viewTitle">Dashboard</h1>
+
+  <section id="dashboard" style="display:block;">
+    <h3>Overview</h3>
+    <p>Total Students: <span id="studentCount">0</span></p>
+    <p>Total Assignments: <span id="assignmentCount">0</span></p>
+    <p>Total Resources: <span id="resourceCount">0</span></p>
+  </section>
+
+  <section id="students">
+    <h3>Student List</h3>
+    <table id="studentTable">
+      <thead>
+        <tr><th>Name</th><th>Enrollment ID</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <form id="addStudentForm">
+      <input type="text" id="student_name" placeholder="Student Name" required>
+      <input type="text" id="student_id" placeholder="Enrollment ID" required>
+      <button type="submit">Add Student</button>
+    </form>
+  </section>
+
+  <section id="assignments">
+    <h3>Assignments (Slot 1 to 5)</h3>
+
+    <table id="assignmentTable">
+      <thead>
+        <tr><th>Slot</th><th>Title</th><th>Description</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <form id="addAssignmentForm">
+      <select id="slot" required>
+        <option value="">Select Slot</option>
+        <option value="1">Slot 1</option>
+        <option value="2">Slot 2</option>
+        <option value="3">Slot 3</option>
+        <option value="4">Slot 4</option>
+        <option value="5">Slot 5</option>
+      </select>
+      <input type="text" id="assign_title" placeholder="Title" required>
+      <input type="text" id="assign_desc" placeholder="Description" required>
+      <button type="submit">Add Assignment</button>
+    </form>
+  </section>
+
+  <section id="resources">
+    <h3>Resources (PDF, Docs, Images)</h3>
+
+    <table id="resourceTable">
+      <thead>
+        <tr><th>Title</th><th>File</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <form id="addResourceForm">
+      <input type="text" id="res_title" placeholder="Resource Title" required>
+      <input type="file" id="res_file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" required>
+      <button type="submit">Add Resource</button>
+    </form>
+  </section>
+</main>
+
+<script>
+const studentMap = new Map([
+  ['ADTU/0/2024-27/BCAO/009', {name:'Aslam Khan', id:'ADTU/0/2024-27/BCAO/009'}],
+  ['ADTU/0/2024-27/BCAO/049', {name:'Surja Jyoti Bordoloi', id:'ADTU/0/2024-27/BCAO/049'}],
+  ['ADTU/0/2024-27/BCAO/043', {name:'Bikash Rabha', id:'ADTU/0/2024-27/BCAO/043'}]
+]);
+
+const assignmentMap = new Map();
+const resourceMap = new Map();
+
+function switchView(view) {
+  document.querySelectorAll('section').forEach(s => s.style.display = 'none');
+  document.getElementById(view).style.display = 'block';
+  document.getElementById('viewTitle').textContent = view.charAt(0).toUpperCase() + view.slice(1);
+  renderStats();
+}
+
+function renderStats() {
+  document.getElementById('studentCount').textContent = studentMap.size;
+  document.getElementById('assignmentCount').textContent = assignmentMap.size;
+  document.getElementById('resourceCount').textContent = resourceMap.size;
+}
+
+function renderStudents() {
+  const tbody = document.querySelector('#studentTable tbody');
+  tbody.innerHTML = '';
+  studentMap.forEach(s => {
+    const row = `<tr><td>${s.name}</td><td>${s.id}</td></tr>`;
+    tbody.insertAdjacentHTML('beforeend', row);
+  });
+}
+
+function renderAssignments() {
+  const tbody = document.querySelector('#assignmentTable tbody');
+  tbody.innerHTML = '';
+  assignmentMap.forEach(a => {
+    const row = `<tr><td>${a.slot}</td><td>${a.title}</td><td>${a.desc}</td></tr>`;
+    tbody.insertAdjacentHTML('beforeend', row);
+  });
+}
+
+document.getElementById('addAssignmentForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const slot = document.getElementById('slot').value;
+  const title = document.getElementById('assign_title').value;
+  const desc = document.getElementById('assign_desc').value;
+
+  assignmentMap.set(slot, {slot, title, desc});
+  renderAssignments();
+  renderStats();
+  e.target.reset();
+});
+
+function renderResources() {
+  const tbody = document.querySelector('#resourceTable tbody');
+  tbody.innerHTML = '';
+  resourceMap.forEach(r => {
+    const fileURL = URL.createObjectURL(r.file);
+    const row = `<tr><td>${r.title}</td><td><a href="${fileURL}" download>Download</a></td></tr>`;
+    tbody.insertAdjacentHTML('beforeend', row);
+  });
+}
+
+document.getElementById('addResourceForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const title = document.getElementById('res_title').value;
+  const file = document.getElementById('res_file').files[0];
+
+  if (file) {
+    resourceMap.set(Date.now(), {title, file});
+    renderResources();
+    renderStats();
+    e.target.reset();
+  }
+});
+
+renderStudents();
+renderAssignments();
+renderResources();
+renderStats();
+</script>
+</body>
+</html>
